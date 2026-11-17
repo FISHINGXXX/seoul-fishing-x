@@ -14,7 +14,14 @@
         overflow-x: hidden;
       }
       .fixed { position: fixed !important; }
-      .inset-0 { top: 0 !important; right: 0 !important; bottom: 0 !important; left: 0 !important; }
+      .inset-0 {
+        top: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        z-index: 2147483647 !important;
+      }
+      nav { z-index: 40 !important; }
       svg { max-width: 100%; height: auto; }
     </style>
   </head>
