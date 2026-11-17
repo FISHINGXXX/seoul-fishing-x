@@ -1,0 +1,25 @@
+{
+  "short_name": "서울형사 피싱X",
+  "name": "서울형사 피싱X - 서울경찰청 형사과",
+  "description": "서울경찰청 형사과 보이스피싱·악성앱 피해구제 및 수사 지원 플랫폼",
+  "icons": [
+    {
+      "src": "/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "maskable"
+    }
+  ],
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#000000",
+  "background_color": "#000000"
+}
