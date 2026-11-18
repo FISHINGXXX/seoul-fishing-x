@@ -39,7 +39,6 @@ import { initializeApp, getApps, getApp } from "firebase/app";
 import {
   getAuth,
   signInAnonymously,
-  signInWithCustomToken,
   onAuthStateChanged,
 } from "firebase/auth";
 import {
@@ -63,14 +62,16 @@ const USER_FIREBASE_CONFIG = {
 
 const SESSION_STORAGE_KEY = "seoul_phishing_x_auth_session";
 
-let app,
-  auth,
-  db,
+let app: any,
+  auth: any,
+  db: any,
   appId = "seoulfisingx-app";
+
 try {
+  const win = window as any;
   const envConfig =
-    typeof __firebase_config !== "undefined" && __firebase_config
-      ? JSON.parse(__firebase_config)
+    typeof win.__firebase_config !== "undefined" && win.__firebase_config
+      ? JSON.parse(win.__firebase_config)
       : null;
   const firebaseConfig =
     envConfig && Object.keys(envConfig).length > 0
@@ -80,8 +81,8 @@ try {
   app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
   auth = getAuth(app);
   db = getFirestore(app);
-  if (typeof __app_id !== "undefined" && __app_id) {
-    appId = __app_id;
+  if (typeof win.__app_id !== "undefined" && win.__app_id) {
+    appId = win.__app_id;
   }
 } catch (e) {
   console.log("Firebase init fallback mode", e);
@@ -128,33 +129,33 @@ const ADMIN_WELFARE_MANUAL_DEFAULT = {
   title: "신종 시나리오: 행정복지센터 및 경찰 사칭 비대면(우편함) 현금 편취",
   tag: "최신 경보",
   content: `[수법 개요]
-• 사건 명칭: 행정복지센터 및 경찰 사칭 결합형 비대면 편취 사기
-• 핵심 특징: 일상적인 행정 연락(주민등록등본 대리 발급 문의)으로 경계심을 무너뜨린 뒤, 기관 사칭(경찰관)으로 연계해 공포심을 유발하고 비대면(우편함 등)으로 현금을 편취하는 신종 수법
+- 사건 명칭: 행정복지센터 및 경찰 사칭 결합형 비대면 편취 사기
+- 핵심 특징: 일상적인 행정 연락(주민등록등본 대리 발급 문의)으로 경계심을 무너뜨린 뒤, 기관 사칭(경찰관)으로 연계해 공포심을 유발하고 비대면(우편함 등)으로 현금을 편취하는 신종 수법
 
 🚨 [단계별 범행 시나리오 흐름]
 
 ① 1단계: 행정복지센터 사칭 (명의도용 불안감 조성)
-• 범행 수법: 가해자가 행정복지센터 직원을 사칭하여 연락
-• 주요 멘트: "친척이 위임장을 들고 와서 등본 발급을 요구했는데, 혹시 아시는 분인가요?"
-• 심리 유도: 피해자가 모르는 사람이라며 당황하면, 명의도용 피해 우려가 크다며 "저희 쪽에서 대신 경찰에 신고해 주겠다"고 안심시킨 뒤 전화를 끊고 다음 연락을 유도
+- 범행 수법: 가해자가 행정복지센터 직원을 사칭하여 연락
+- 주요 멘트: "친척이 위임장을 들고 와서 등본 발급을 요구했는데, 혹시 아시는 분인가요?"
+- 심리 유도: 피해자가 모르는 사람이라며 당황하면, 명의도용 피해 우려가 크다며 "저희 쪽에서 대신 경찰에 신고해 주겠다"고 안심시킨 뒤 전화를 끊고 다음 연락을 유도
 
 ② 2단계: 경찰관 사칭 (범죄 연루 압박 및 고립)
-• 범행 수법: 직후에 사칭범이 경찰관(형사팀)인 것처럼 다시 연락
-• 주요 멘트: "서울 OO경찰서 형사입니다. 행정복지센터 신고 접수를 받고 확인해 보니, 현재 선생님 명의도용 및 대포통장 개설 시도가 포착되었습니다."
-• 심리 고립: "공범으로 오인될 수 있으니 수사가 끝날 때까지 가족을 포함한 주변 사람들에게 절대 알리지 마십시오."
+- 범행 수법: 직후에 사칭범이 경찰관(형사팀)인 것처럼 다시 연락
+- 주요 멘트: "서울 OO경찰서 형사입니다. 행정복지센터 신고 접수를 받고 확인해 보니, 현재 선생님 명의도용 및 대포통장 개설 시도가 포착되었습니다."
+- 심리 고립: "공범으로 오인될 수 있으니 수사가 끝날 때까지 가족을 포함한 주변 사람들에게 절대 알리지 마십시오."
 
 ③ 3단계: 임시 보호 조치 빙자 (현금 인출 및 보관 지시)
-• 범행 수법: 자산 보호를 명목으로 현금을 직접 찾아 특정 장소에 두도록 강요
-• 주요 멘트: "계좌에 있는 자산이 불법 자금과 섞였는지 확인하고 보호해야 합니다. 현금을 인출해 자택 우편함에 넣어두시면, 저희가 회수해 확인 후 즉시 돌려드리겠습니다."
-• 행동 지시: 피해자로 하여금 ATM 무카드/무통장 인출 등을 통해 현금을 전액 찾게 한 뒤, 자택 우편함에 넣고 인증 사진을 전송하도록 강요
+- 범행 수법: 자산 보호를 명목으로 현금을 직접 찾아 특정 장소에 두도록 강요
+- 주요 멘트: "계좌에 있는 자산이 불법 자금과 섞였는지 확인하고 보호해야 합니다. 현금을 인출해 자택 우편함에 넣어두시면, 저희가 회수해 확인 후 즉시 돌려드리겠습니다."
+- 행동 지시: 피해자로 하여금 ATM 무카드/무통장 인출 등을 통해 현금을 전액 찾게 한 뒤, 자택 우편함에 넣고 인증 사진을 전송하도록 강요
 
 ④ 4단계: 수거책 현금 탈취
-• 범행 수법: 피해자가 우편함 보관 인증 사진을 보내면, 인근에 대기 중이던 수거책이 즉시 우편함을 열어 현금 봉투를 들고 도주
+- 범행 수법: 피해자가 우편함 보관 인증 사진을 보내면, 인근에 대기 중이던 수거책이 즉시 우편함을 열어 현금 봉투를 들고 도주
 
 🛡️ [현장 대응 및 피해 예방 핵심 수칙]
-• 공공기관의 대리 신고 부재: 행정복지센터 직원이 개인의 명의도용 피해를 대신 경찰에 접수해 주거나, 직후에 경찰관이 개인 휴대폰으로 바로 연락하는 공식 절차는 존재하지 않습니다.
-• 비대면 현금 인출·보관 요구는 100% 사기: 경찰, 검찰, 금융감독원 등 어떤 수사·금융기관도 자산 보호나 범죄 연루 확인을 명목으로 현금 인출을 요구하거나 우편함·보관함 등에 돈을 넣어두라고 지시하지 않습니다.
-• 즉시 신고 및 대처: 유사한 전화를 받았을 경우 즉시 통화를 종료하고, 주변의 다른 전화를 통해 112 또는 경찰청 보이스피싱 통합신고·상담센터(1394)로 진위 여부를 반드시 확인해야 합니다.`,
+- 공공기관의 대리 신고 부재: 행정복지센터 직원이 개인의 명의도용 피해를 대신 경찰에 접수해 주거나, 직후에 경찰관이 개인 휴대폰으로 바로 연락하는 공식 절차는 존재하지 않습니다.
+- 비대면 현금 인출·보관 요구는 100% 사기: 경찰, 검찰, 금융감독원 등 어떤 수사·금융기관도 자산 보호나 범죄 연루 확인을 명목으로 현금 인출을 요구하거나 우편함·보관함 등에 돈을 넣어두라고 지시하지 않습니다.
+- 즉시 신고 및 대처: 유사한 전화를 받았을 경우 즉시 통화를 종료하고, 주변의 다른 전화를 통해 112 또는 경찰청 보이스피싱 통합신고·상담센터(1394)로 진위 여부를 반드시 확인해야 합니다.`,
 };
 
 const INITIAL_MANUALS = [
@@ -275,51 +276,6 @@ const INITIAL_POSTS = [
   },
 ];
 
-const normalizeReportDate = (report) => {
-  if (!report) return "날짜 미기재";
-  const rawDate = report.date || report.dispatchDate || "";
-
-  if (typeof rawDate === "string" && rawDate !== "날짜 미상") {
-    const nums = rawDate.match(/\d+/g);
-    if (nums && nums.length >= 3) {
-      let year = nums[0];
-      if (year.length === 2) year = `20${year}`;
-      const month = String(nums[1]).padStart(2, "0");
-      const day = String(nums[2]).padStart(2, "0");
-      return `${year}. ${month}. ${day}`;
-    }
-  }
-
-  let ts = report.createdAt;
-  if (!ts && typeof report.id === "string") {
-    const idMatch = report.id.match(/^REP-(\d{13})$/);
-    if (idMatch) ts = Number(idMatch[1]);
-  }
-  if (ts) {
-    const d = new Date(ts);
-    if (!isNaN(d.getTime())) {
-      const year = d.getFullYear();
-      const month = String(d.getMonth() + 1).padStart(2, "0");
-      const day = String(d.getDate()).padStart(2, "0");
-      return `${year}. ${month}. ${day}`;
-    }
-  }
-
-  const today = new Date();
-  return `${today.getFullYear()}. ${String(today.getMonth() + 1).padStart(
-    2,
-    "0"
-  )}. ${String(today.getDate()).padStart(2, "0")}`;
-};
-
-const extractYearMonth = (normalizedDate) => {
-  const match = String(normalizedDate).match(/^(\d{4})\.\s*(\d{2})/);
-  if (match) {
-    return `${match[1]}년 ${Number(match[2])}월`;
-  }
-  return "기타 기간";
-};
-
 const getTodayFormatted = () => {
   const d = new Date();
   return `${d.getFullYear()}. ${String(d.getMonth() + 1).padStart(
@@ -328,21 +284,14 @@ const getTodayFormatted = () => {
   )}. ${String(d.getDate()).padStart(2, "0")}`;
 };
 
-const formatJoinDate = (ts) => {
-  if (!ts) return "날짜 정보 없음";
-  const d = new Date(Number(ts));
-  if (isNaN(d.getTime())) return "날짜 정보 없음";
-  return `${d.getFullYear()}. ${String(d.getMonth() + 1).padStart(
-    2,
-    "0"
-  )}. ${String(d.getDate()).padStart(2, "0")} ${String(d.getHours()).padStart(
-    2,
-    "0"
-  )}:${String(d.getMinutes()).padStart(2, "0")}`;
-};
-
-// 원본 스플래시 이미지(/splash.jpg)가 있으면 그대로 표시하고, 없을 시 고해상도 폴백 레이아웃 표시
-const SplashScreen = ({ fadingOut, onSkip }) => {
+// 원본 스플래시 이미지(/splash.jpg) 표시 컴포넌트
+const SplashScreen = ({
+  fadingOut,
+  onSkip,
+}: {
+  fadingOut: boolean;
+  onSkip: () => void;
+}) => {
   const [imgLoaded, setImgLoaded] = useState(true);
 
   return (
@@ -361,7 +310,6 @@ const SplashScreen = ({ fadingOut, onSkip }) => {
         />
       )}
 
-      {/* 상단 다크 브러시드 메탈 질감 영역 */}
       <div
         className="w-full h-[23.8%] relative overflow-hidden shrink-0"
         style={{
@@ -372,7 +320,6 @@ const SplashScreen = ({ fadingOut, onSkip }) => {
         <div className="absolute inset-x-0 bottom-0 h-10 bg-gradient-to-b from-transparent via-black/75 to-black" />
       </div>
 
-      {/* 중앙 순수 블랙 배경 & '서울형사 피싱 X' 로고 영역 */}
       <div className="flex-1 bg-black flex items-center justify-center px-4 relative">
         <svg
           viewBox="0 0 724 220"
@@ -386,10 +333,6 @@ const SplashScreen = ({ fadingOut, onSkip }) => {
             fontSize="66"
             fontWeight="900"
             letterSpacing="-3"
-            style={{
-              fontFamily:
-                "'Pretendard Variable', 'Pretendard', 'Noto Sans KR', 'Malgun Gothic', sans-serif",
-            }}
           >
             서울형사
           </text>
@@ -400,29 +343,15 @@ const SplashScreen = ({ fadingOut, onSkip }) => {
             fontSize="72"
             fontWeight="900"
             letterSpacing="-2"
-            style={{
-              fontFamily:
-                "'Pretendard Variable', 'Pretendard', 'Noto Sans KR', 'Malgun Gothic', sans-serif",
-            }}
           >
             피싱
           </text>
-          <text
-            x="530"
-            y="141"
-            fill="#DC0609"
-            fontSize="92"
-            fontWeight="900"
-            style={{
-              fontFamily: "'Montserrat', 'Pretendard', sans-serif",
-            }}
-          >
+          <text x="530" y="141" fill="#DC0609" fontSize="92" fontWeight="900">
             X
           </text>
         </svg>
       </div>
 
-      {/* 하단 영역 + 남색(#2C314E) '서울경찰청 형사과' 바 */}
       <div className="w-full h-[23.8%] flex flex-col shrink-0">
         <div
           className="flex-1 w-full relative overflow-hidden"
@@ -437,13 +366,7 @@ const SplashScreen = ({ fadingOut, onSkip }) => {
           className="w-full h-[30%] min-h-[48px] max-h-[64px] flex items-center justify-center shrink-0"
           style={{ backgroundColor: "#2C314E" }}
         >
-          <span
-            className="text-white text-[14px] sm:text-[15px] tracking-tight font-bold"
-            style={{
-              fontFamily:
-                "'Pretendard Variable', 'Pretendard', 'Noto Sans KR', sans-serif",
-            }}
-          >
+          <span className="text-white text-[14px] sm:text-[15px] tracking-tight font-bold">
             서울경찰청 형사과
           </span>
         </div>
@@ -452,20 +375,18 @@ const SplashScreen = ({ fadingOut, onSkip }) => {
   );
 };
 
-// 상단 로고 컴포넌트: 서울형사 피싱X
-const SeoulPhishingXLogo = ({ size = "md", darkText = false }) => {
+// 상단 로고 컴포넌트
+const SeoulPhishingXLogo = ({
+  size = "md",
+  darkText = false,
+}: {
+  size?: string;
+  darkText?: boolean;
+}) => {
   const isLarge = size === "lg";
-
   return (
     <span
       className="inline-flex items-baseline select-none antialiased"
-      style={{
-        fontFamily:
-          "'Pretendard Variable', 'Pretendard', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif",
-        WebkitFontSmoothing: "antialiased",
-        MozOsxFontSmoothing: "grayscale",
-        textRendering: "optimizeLegibility",
-      }}
       aria-label="서울형사 피싱X"
     >
       <span
@@ -474,7 +395,7 @@ const SeoulPhishingXLogo = ({ size = "md", darkText = false }) => {
         } tracking-tight ${
           isLarge ? "text-xl sm:text-2xl" : "text-base sm:text-lg"
         }`}
-        style={{ fontWeight: 800, letterSpacing: "-0.02em" }}
+        style={{ fontWeight: 800 }}
       >
         서울형사
       </span>
@@ -490,14 +411,9 @@ const SeoulPhishingXLogo = ({ size = "md", darkText = false }) => {
       </span>
       <span
         className={`text-[#E60000] ml-0.5 ${
-          darkText
-            ? "drop-shadow-[0_2px_6px_rgba(230,0,0,0.22)]"
-            : "drop-shadow-[0_0_10px_rgba(255,26,26,0.5)]"
-        } ${isLarge ? "text-3xl sm:text-4xl" : "text-xl sm:text-2xl"}`}
-        style={{
-          fontFamily: "'Montserrat', 'Pretendard', sans-serif",
-          fontWeight: 900,
-        }}
+          isLarge ? "text-3xl sm:text-4xl" : "text-xl sm:text-2xl"
+        }`}
+        style={{ fontWeight: 900 }}
       >
         X
       </span>
@@ -506,7 +422,7 @@ const SeoulPhishingXLogo = ({ size = "md", darkText = false }) => {
 };
 
 // [붙임5·6] 악성앱 추출 및 삭제 통합 매뉴얼 상세페이지 컴포넌트
-const ExtractionDeletionGuideDetail = ({ manualData }) => {
+const ExtractionDeletionGuideDetail = ({ manualData }: { manualData?: any }) => {
   const [subTab, setSubTab] = useState("all");
   const data = { ...GUIDE_MANUAL_DEFAULT, ...(manualData || {}) };
   const hiddenList = Array.isArray(data.hiddenSystemApps)
@@ -559,58 +475,11 @@ const ExtractionDeletionGuideDetail = ({ manualData }) => {
             <div className="bg-blue-50/70 border border-blue-100 rounded-2xl p-4 space-y-1.5">
               <div className="text-xs font-black text-blue-900 flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-blue-600"></span>
-                악성앱 추출 프로그램 개요 (경찰청 디지털포렌식센터 개발)
+                악성앱 추출 프로그램 개요
               </div>
               <p className="text-xs text-slate-700 font-bold leading-relaxed">
                 {data.extractOverview}
               </p>
-            </div>
-
-            <div className="space-y-3">
-              <h4 className="text-xs font-black text-slate-900 flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-slate-900"></span>
-                추출 절차 (갤럭시·안드로이드 휴대전화 전용)
-              </h4>
-
-              <div className="space-y-2.5">
-                <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-3.5">
-                  <div className="text-xs font-black text-slate-900 mb-1">
-                    ① 피해자의 휴대전화에서 ‘악성 앱 자동추출 프로그램(앱)’ 설치
-                  </div>
-                  <p className="text-[11px] text-slate-600 font-bold leading-relaxed">
-                    → ‘피해자의 휴대폰’으로 QR코드 촬영 또는 링크(
-                    <span className="text-blue-600 underline font-black">
-                      {data.qrUrl}
-                    </span>
-                    ) 접속하여 다운로드
-                  </p>
-                  <p className="text-[11px] text-rose-600 font-extrabold mt-1">
-                    ※ 갤럭시(안드로이드 기반) 휴대전화에만 설치 가능
-                  </p>
-                </div>
-
-                <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-3.5">
-                  <div className="text-xs font-black text-slate-900 mb-1">
-                    ② ‘악성 앱 자동 추출 프로그램’ 실행
-                  </div>
-                  <p className="text-[11px] text-slate-600 font-bold leading-relaxed">
-                    → 프로그램 실행 후 유해한 앱이라는 안내창이 뜨면{" "}
-                    <span className="text-rose-600 font-black">
-                      ‘무시하고 설치’
-                    </span>{" "}
-                    클릭, 추출 경찰관 정보 입력 후 검사 시작 및 전송 여부 확인
-                  </p>
-                </div>
-
-                <div className="bg-amber-50 border border-amber-200 rounded-2xl p-3.5">
-                  <div className="text-xs font-black text-amber-900 mb-0.5">
-                    ③ 악성 앱 추출 후 반드시 별도 제거 필요!
-                  </div>
-                  <p className="text-[11px] text-amber-800 font-bold leading-relaxed">
-                    → {data.extractWarning}
-                  </p>
-                </div>
-              </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
@@ -640,33 +509,8 @@ const ExtractionDeletionGuideDetail = ({ manualData }) => {
 
               <div className="border border-slate-200 rounded-2xl p-4 bg-white flex flex-col justify-between">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-[11px] font-black bg-slate-900 text-white px-2.5 py-0.5 rounded-lg">
-                    STEP 2
-                  </span>
-                  <span className="text-[10px] font-bold text-slate-400">
-                    설치 팝업
-                  </span>
-                </div>
-                <div className="bg-slate-900 text-white rounded-xl p-3 space-y-2 text-[10px] my-1">
-                  <div className="font-bold text-slate-200">
-                    파일을 다운로드하시겠습니까?
-                  </div>
-                  <div className="flex justify-end gap-3 pt-1 border-t border-slate-700 font-black">
-                    <span className="text-slate-400">취소</span>
-                    <span className="text-blue-400 ring-2 ring-rose-500 px-1.5 rounded">
-                      다운로드 / 설치
-                    </span>
-                  </div>
-                </div>
-                <div className="text-[11px] font-black text-slate-800 text-center mt-2">
-                  ② 파일 다운로드 권한 허용 클릭
-                </div>
-              </div>
-
-              <div className="border border-slate-200 rounded-2xl p-4 bg-white flex flex-col justify-between">
-                <div className="flex items-center justify-between mb-2">
                   <span className="text-[11px] font-black bg-rose-600 text-white px-2.5 py-0.5 rounded-lg">
-                    STEP 3 (중요)
+                    STEP 2 (중요)
                   </span>
                   <span className="text-[10px] font-bold text-rose-500">
                     차단 우회
@@ -686,35 +530,7 @@ const ExtractionDeletionGuideDetail = ({ manualData }) => {
                   </div>
                 </div>
                 <div className="text-[11px] font-black text-slate-800 text-center mt-2">
-                  ③ ‘무시하고 설치하기’ 선택 후 설치
-                </div>
-              </div>
-
-              <div className="border border-slate-200 rounded-2xl p-4 bg-white flex flex-col justify-between">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-[11px] font-black bg-blue-600 text-white px-2.5 py-0.5 rounded-lg">
-                    STEP 4
-                  </span>
-                  <span className="text-[10px] font-bold text-blue-600">
-                    KISA 자동전송
-                  </span>
-                </div>
-                <div className="bg-slate-50 border border-slate-200 rounded-xl p-2.5 space-y-1 text-[10px] my-1">
-                  <div className="font-black text-slate-800 text-center border-b border-slate-200 pb-1">
-                    수사관정보 입력
-                  </div>
-                  <div className="flex justify-between text-slate-500 font-bold">
-                    <span>소속 / 계급 / 성명</span>
-                    <span className="text-slate-800">
-                      서울청 / 경사 / 홍길동
-                    </span>
-                  </div>
-                  <div className="bg-blue-600 text-white text-center py-1 rounded font-black mt-1">
-                    검사 시작 및 전송
-                  </div>
-                </div>
-                <div className="text-[11px] font-black text-slate-800 text-center mt-2">
-                  ④ 수사관정보 입력 후 전송 확인
+                  ② ‘무시하고 설치하기’ 선택 후 검사·전송
                 </div>
               </div>
             </div>
@@ -737,127 +553,42 @@ const ExtractionDeletionGuideDetail = ({ manualData }) => {
 
           <div className="p-5 space-y-6">
             <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <span className="bg-slate-900 text-white text-xs font-black px-2.5 py-1 rounded-lg">
-                  단계 1
-                </span>
-                <h4 className="text-sm font-black text-slate-900">
-                  이미 설치된 악성앱을 삭제하는 방법
-                </h4>
-              </div>
-
               <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-3.5 text-xs font-extrabold text-emerald-900">
                 🛡 {data.deleteVaccineNotice}
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                {[
-                  {
-                    step: "① 설정 진입",
-                    desc: "휴대전화 상단바를 내려 우측 상단 설정(⚙️) 선택",
-                  },
-                  {
-                    step: "② 아래로 스크롤",
-                    desc: "설정 화면에서 아래로 내림(드래그)",
-                  },
-                  {
-                    step: "③ 애플리케이션",
-                    desc: "메뉴 중 [애플리케이션] 항목 선택",
-                  },
-                  {
-                    step: "④ 정렬기준 선택",
-                    desc: "앱 목록 우측의 정렬 아이콘(⇅) 선택",
-                  },
-                ].map((item, idx) => (
-                  <div
-                    key={idx}
-                    className="bg-slate-50 border border-slate-200 rounded-2xl p-3 flex flex-col justify-between"
-                  >
-                    <div className="text-xs font-black text-blue-700 mb-1">
-                      {item.step}
-                    </div>
-                    <div className="text-[11px] font-bold text-slate-600 leading-snug">
-                      {item.desc}
-                    </div>
+              <div className="bg-rose-50/70 border border-rose-200 rounded-2xl p-4 space-y-3">
+                <div className="text-xs font-black text-rose-900 border-b border-rose-200 pb-2">
+                  주요 의심 악성앱 명칭 예시 (즉시 삭제)
+                </div>
+                <div>
+                  <div className="text-[11px] font-black text-rose-700 mb-1.5">
+                    ■ 숨겨진 악성앱 (시스템 앱 표시 활성화 필수)
                   </div>
-                ))}
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                <div className="bg-slate-900 text-white rounded-2xl p-4 space-y-3 border border-slate-800">
-                  <div className="flex items-center justify-between border-b border-slate-700 pb-2">
-                    <span className="text-xs font-black text-amber-300">
-                      ⑤ 필터 및 정렬 설정 (필수!)
-                    </span>
-                    <span className="text-[10px] bg-amber-400/20 text-amber-300 px-2 py-0.5 rounded font-bold">
-                      갤럭시 화면
-                    </span>
-                  </div>
-
-                  <div className="bg-slate-800 rounded-xl p-3 flex items-center justify-between border border-amber-400/60">
-                    <div>
-                      <div className="text-xs font-black text-white">
-                        시스템 앱 표시
-                      </div>
-                      <div className="text-[10px] text-amber-300 font-bold">
-                        반드시 켜야 숨겨진 악성앱 확인 가능!
-                      </div>
-                    </div>
-                    <div className="w-10 h-5 bg-blue-500 rounded-full flex items-center justify-end p-0.5">
-                      <div className="w-4 h-4 bg-white rounded-full"></div>
-                    </div>
-                  </div>
-
-                  <div className="bg-slate-800 rounded-xl p-3 space-y-1.5 border border-amber-400/60">
-                    <div className="text-[10px] text-slate-400 font-bold">
-                      정렬 기준 (아래 2개 중 선택하여 최근 설치앱 색출)
-                    </div>
-                    <div className="flex items-center gap-2 text-xs font-black text-amber-300">
-                      <span className="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block"></span>
-                      최근 사용 이력 순
-                    </div>
-                    <div className="flex items-center gap-2 text-xs font-black text-amber-300">
-                      <span className="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block"></span>
-                      마지막 업데이트 순
-                    </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {hiddenList.map((name: string, i: number) => (
+                      <span
+                        key={i}
+                        className="bg-white border border-rose-200 text-rose-800 text-[11px] font-extrabold px-2.5 py-1 rounded-lg shadow-sm"
+                      >
+                        {name}
+                      </span>
+                    ))}
                   </div>
                 </div>
-
-                <div className="bg-rose-50/70 border border-rose-200 rounded-2xl p-4 space-y-3">
-                  <div className="text-xs font-black text-rose-900 border-b border-rose-200 pb-2">
-                    ⑥ 주요 의심 악성앱 명칭 예시 (즉시 삭제)
+                <div>
+                  <div className="text-[11px] font-black text-slate-800 mb-1.5">
+                    ■ 주요 사칭 악성앱 (바탕화면 노출)
                   </div>
-
-                  <div>
-                    <div className="text-[11px] font-black text-rose-700 mb-1.5">
-                      ■ 숨겨진 악성앱 (시스템 앱 · 바탕화면에 안 보임)
-                    </div>
-                    <div className="flex flex-wrap gap-1.5">
-                      {hiddenList.map((name, i) => (
-                        <span
-                          key={i}
-                          className="bg-white border border-rose-200 text-rose-800 text-[11px] font-extrabold px-2.5 py-1 rounded-lg shadow-sm"
-                        >
-                          {name}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="text-[11px] font-black text-slate-800 mb-1.5">
-                      ■ 주요 사칭 악성앱 (바탕화면에서 확인됨)
-                    </div>
-                    <div className="flex flex-wrap gap-1.5">
-                      {impersonationList.map((name, i) => (
-                        <span
-                          key={i}
-                          className="bg-white border border-slate-200 text-slate-800 text-[11px] font-bold px-2.5 py-1 rounded-lg shadow-sm"
-                        >
-                          {name}
-                        </span>
-                      ))}
-                    </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {impersonationList.map((name: string, i: number) => (
+                      <span
+                        key={i}
+                        className="bg-white border border-slate-200 text-slate-800 text-[11px] font-bold px-2.5 py-1 rounded-lg shadow-sm"
+                      >
+                        {name}
+                      </span>
+                    ))}
                   </div>
                 </div>
               </div>
@@ -895,7 +626,7 @@ const ExtractionDeletionGuideDetail = ({ manualData }) => {
 
                 <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3.5">
                   <div className="text-xs font-black text-slate-900 mb-1">
-                    ② 최근 파일 · 다운로드 · 설치파일(APK) 확인
+                    ② 다운로드 · 설치파일(APK) 확인
                   </div>
                   <p className="text-[11px] text-slate-600 font-bold">
                     카테고리에서{" "}
@@ -904,8 +635,7 @@ const ExtractionDeletionGuideDetail = ({ manualData }) => {
                     <span className="text-rose-600 font-black">
                       [설치 파일(APK)]
                     </span>
-                    로 들어가 의심 파일(예: 대출신청서.zip, KBank.zip)을
-                    확인합니다.
+                    로 들어가 의심 파일을 확인합니다.
                   </p>
                 </div>
 
@@ -914,12 +644,8 @@ const ExtractionDeletionGuideDetail = ({ manualData }) => {
                     ③ 악성앱 설치파일(.apk) 완전 삭제
                   </div>
                   <p className="text-[11px] text-slate-600 font-bold">
-                    설치 파일 목록에 남아 있는{" "}
-                    <span className="text-rose-600 font-black">
-                      shinhan.apk
-                    </span>{" "}
-                    등 모든 악성 설치파일을 길게 눌러 삭제하고 휴지통까지
-                    비웁니다.
+                    목록에 남아 있는 모든 악성 설치파일을 길게 눌러 삭제하고
+                    휴지통까지 비웁니다.
                   </p>
                 </div>
 
@@ -927,4 +653,912 @@ const ExtractionDeletionGuideDetail = ({ manualData }) => {
                   <div className="text-xs font-black text-blue-900 mb-1">
                     ④ 백신 앱으로 최종 악성코드 검사
                   </div>
-                  <p className="text-[11px] text-blue-
+                  <p className="text-[11px] text-blue-800 font-bold">
+                    V3 Mobile Plus 또는 알약M, 시티즌코난으로 최종 정밀 검사를
+                    실행하여 잔여 악성코드를 확인합니다.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default function App() {
+  // 스플래시 화면 상태
+  const [showSplash, setShowSplash] = useState(true);
+  const [fadingOut, setFadingOut] = useState(false);
+
+  // 탭 상태: stats(통계) | manual(매뉴얼) | report(조치보고) | qr(추출도구) | board(소통방) | account(계정관리)
+  const [activeTab, setActiveTab] = useState("stats");
+
+  // 사용자 및 관리자 권한 상태
+  const [currentUser, setCurrentUser] = useState({
+    name: "경사 강석준",
+    dept: "서울청 강력계 악성앱담당자",
+    isAdmin: true,
+  });
+
+  // 통계 상태
+  const [stats, setStats] = useState({
+    todayTargetCount: 9,
+    diffFromYesterday: 4,
+    actionRate: "98.9%",
+    preventedAmountText: "4.86억",
+  });
+  const [isStatsModalOpen, setIsStatsModalOpen] = useState(false);
+  const [editStats, setEditStats] = useState(stats);
+
+  // 최근 보이스피싱 보도 사례 상태
+  const [newsList, setNewsList] = useState<any[]>(() => {
+    try {
+      const saved = localStorage.getItem("phishingx_news");
+      return saved ? JSON.parse(saved) : INITIAL_NEWS;
+    } catch {
+      return INITIAL_NEWS;
+    }
+  });
+  const [isNewsModalOpen, setIsNewsModalOpen] = useState(false);
+  const [newArticle, setNewArticle] = useState({
+    tag: "",
+    title: "",
+    press: "",
+    url: "",
+  });
+
+  // 매뉴얼 상태
+  const [manuals, setManuals] = useState<any[]>(INITIAL_MANUALS);
+  const [selectedManual, setSelectedManual] = useState<any>(null);
+  const [manualSearch, setManualSearch] = useState("");
+
+  // 조치보고 상태
+  const [reports, setReports] = useState<any[]>(INITIAL_REPORTS);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [newReport, setNewReport] = useState({
+    serialNumber: "",
+    victimName: "",
+    team: "",
+    officer: "",
+    crimeType: "주민센터사칭",
+    preventedAmount: "",
+    summary: "",
+  });
+
+  // 소통방 상태
+  const [posts, setPosts] = useState<any[]>(INITIAL_POSTS);
+  const [newPostContent, setNewPostContent] = useState("");
+  const [newPostCategory, setNewPostCategory] = useState("신종APK");
+
+  // 스플래시 타이머
+  useEffect(() => {
+    const fadeTimer = setTimeout(() => setFadingOut(true), 1400);
+    const hideTimer = setTimeout(() => setShowSplash(false), 1900);
+    return () => {
+      clearTimeout(fadeTimer);
+      clearTimeout(hideTimer);
+    };
+  }, []);
+
+  // Firebase 실시간 동기화 (뉴스 및 통계)
+  useEffect(() => {
+    if (!db) return;
+    try {
+      if (auth) {
+        signInAnonymously(auth).catch(() => {});
+      }
+      const statsRef = doc(db, "app_settings", "dashboard_stats");
+      const unsubStats = onSnapshot(
+        statsRef,
+        (snap) => {
+          if (snap.exists()) {
+            const data = snap.data() as any;
+            setStats((prev) => ({ ...prev, ...data }));
+          }
+        },
+        () => {}
+      );
+
+      const newsCol = collection(db, "phishing_news");
+      const unsubNews = onSnapshot(
+        newsCol,
+        (snap) => {
+          if (!snap.empty) {
+            const loaded = snap.docs
+              .map((d) => ({ id: d.id, ...(d.data() as any) }))
+              .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+            setNewsList(loaded);
+          }
+        },
+        () => {}
+      );
+
+      return () => {
+        unsubStats();
+        unsubNews();
+      };
+    } catch (e) {
+      console.log("Firestore sync skipped", e);
+    }
+  }, []);
+
+  // 통계 저장 핸들러
+  const handleSaveStats = async () => {
+    setStats(editStats);
+    setIsStatsModalOpen(false);
+    if (db) {
+      try {
+        await setDoc(doc(db, "app_settings", "dashboard_stats"), editStats, {
+          merge: true,
+        });
+      } catch (e) {
+        console.log("Stats save fallback", e);
+      }
+    }
+  };
+
+  // 보도 사례 추가 핸들러
+  const handleAddNews = async () => {
+    if (!newArticle.title.trim() || !newArticle.url.trim()) return;
+    const item = {
+      id: `news-${Date.now()}`,
+      createdAt: Date.now(),
+      tag: newArticle.tag.trim() || "주요보도",
+      title: newArticle.title.trim(),
+      press: newArticle.press.trim() || `보도자료 · ${getTodayFormatted()}`,
+      url: newArticle.url.trim().startsWith("http")
+        ? newArticle.url.trim()
+        : `https://${newArticle.url.trim()}`,
+    };
+
+    const updated = [item, ...newsList];
+    setNewsList(updated);
+    localStorage.setItem("phishingx_news", JSON.stringify(updated));
+    setNewArticle({ tag: "", title: "", press: "", url: "" });
+    setIsNewsModalOpen(false);
+
+    if (db) {
+      try {
+        await setDoc(doc(db, "phishing_news", item.id), item);
+      } catch (e) {
+        console.log("News save fallback", e);
+      }
+    }
+  };
+
+  // 보도 사례 삭제 핸들러
+  const handleDeleteNews = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const updated = newsList.filter((n) => n.id !== id);
+    setNewsList(updated);
+    localStorage.setItem("phishingx_news", JSON.stringify(updated));
+    if (db) {
+      try {
+        await deleteDoc(doc(db, "phishing_news", id));
+      } catch (err) {
+        console.log("News delete fallback", err);
+      }
+    }
+  };
+
+  // 조치보고 등록 핸들러
+  const handleAddReport = () => {
+    if (!newReport.victimName.trim() || !newReport.summary.trim()) return;
+    const item = {
+      id: `REP-${Date.now()}`,
+      date: getTodayFormatted(),
+      serialNumber: newReport.serialNumber || "신규",
+      victimName: newReport.victimName,
+      team: newReport.team || "현장출동팀",
+      officer: newReport.officer || currentUser.name,
+      dispatchResult: "조치완료",
+      faceToFace: "대면",
+      contacted: "악성앱 설치",
+      crimeType: newReport.crimeType,
+      phoneMaker: "삼성/갤럭시",
+      appExtracted: "추출 완료",
+      appDeleted: "삭제 완료",
+      damageAmount: "0",
+      preventedAmount: newReport.preventedAmount || "0",
+      summary: newReport.summary,
+      status: "접수완료",
+    };
+    setReports([item, ...reports]);
+    setNewReport({
+      serialNumber: "",
+      victimName: "",
+      team: "",
+      officer: "",
+      crimeType: "주민센터사칭",
+      preventedAmount: "",
+      summary: "",
+    });
+    setIsReportModalOpen(false);
+  };
+
+  // 소통방 글 등록 핸들러
+  const handleAddPost = () => {
+    if (!newPostContent.trim()) return;
+    const item = {
+      id: Date.now(),
+      author: `${currentUser.dept} ${currentUser.name}`,
+      time: "방금 전",
+      category: newPostCategory,
+      content: newPostContent.trim(),
+    };
+    setPosts([item, ...posts]);
+    setNewPostContent("");
+  };
+
+  const filteredManuals = manuals.filter(
+    (m) =>
+      m.title.toLowerCase().includes(manualSearch.toLowerCase()) ||
+      m.tag.toLowerCase().includes(manualSearch.toLowerCase()) ||
+      m.content.toLowerCase().includes(manualSearch.toLowerCase())
+  );
+
+  return (
+    <div className="min-h-screen bg-[#f8fafc] text-slate-900 pb-24">
+      {showSplash && (
+        <SplashScreen
+          fadingOut={fadingOut}
+          onSkip={() => setShowSplash(false)}
+        />
+      )}
+
+      {/* 상단 네비게이션 헤더 */}
+      <header className="bg-[#0f172a] text-white sticky top-0 z-30 shadow-md">
+        <div className="max-w-lg mx-auto px-4 py-3.5 flex items-center justify-between">
+          <div>
+            <div className="flex items-center gap-2">
+              <ShieldAlert className="w-5 h-5 text-red-500 shrink-0" />
+              <SeoulPhishingXLogo size="md" />
+              {currentUser.isAdmin && (
+                <span className="text-[11px] text-slate-300 font-bold">
+                  (관리자)
+                </span>
+              )}
+            </div>
+            <p className="text-[11px] text-slate-400 mt-0.5 font-medium">
+              {currentUser.name} · {currentUser.dept}
+            </p>
+          </div>
+          <button
+            onClick={() =>
+              setCurrentUser((prev) => ({ ...prev, isAdmin: !prev.isAdmin }))
+            }
+            className="px-3 py-1.5 rounded-full bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs text-slate-200 font-semibold transition"
+          >
+            {currentUser.isAdmin ? "관리자모드" : "일반모드"}
+          </button>
+        </div>
+      </header>
+
+      {/* 메인 콘텐츠 컨테이너 */}
+      <main className="max-w-lg mx-auto px-4 pt-4 space-y-4">
+        {/* ==================== 1. 통계 탭 ==================== */}
+        {activeTab === "stats" && (
+          <div className="space-y-4">
+            {/* 상단 다크 네이비 메인 통계 배너 */}
+            <div className="bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#1e1b4b] text-white rounded-3xl p-5 shadow-lg relative overflow-hidden">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-xs text-slate-300 font-semibold">
+                    오늘의 서울청 악성앱 구제활동 대상자
+                  </p>
+                  <div className="flex items-baseline gap-3 mt-2">
+                    <span className="text-3xl font-black tracking-tight">
+                      {stats.todayTargetCount}
+                      <span className="text-lg font-bold ml-0.5">건</span>
+                    </span>
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-500/20 border border-amber-400/30 text-amber-300 text-[11px] font-bold">
+                      ▲ 전일 대비 {stats.diffFromYesterday}건
+                    </span>
+                  </div>
+                </div>
+                {currentUser.isAdmin && (
+                  <button
+                    onClick={() => {
+                      setEditStats(stats);
+                      setIsStatsModalOpen(true);
+                    }}
+                    className="flex items-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow transition"
+                  >
+                    <Edit2 className="w-3 h-3" />
+                    통계수정
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* 중단 2열 핵심 지표 카드 */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
+                <p className="text-[11px] text-slate-400 font-bold">
+                  서울경찰청 악성앱 구제활동 조치율
+                </p>
+                <p className="text-2xl font-black text-emerald-600 mt-1.5">
+                  {stats.actionRate}
+                </p>
+              </div>
+              <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
+                <p className="text-[11px] text-slate-400 font-bold">
+                  누적 피해 예방액
+                </p>
+                <p className="text-2xl font-black text-blue-900 mt-1.5">
+                  {stats.preventedAmountText}
+                </p>
+              </div>
+            </div>
+
+            {/* 신규 교체 영역: 최근 보이스피싱 주요 보도 사례 */}
+            <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-base">📰</span>
+                  <h3 className="font-extrabold text-slate-800 text-sm">
+                    최근 보이스피싱 주요 보도 사례
+                  </h3>
+                </div>
+                {currentUser.isAdmin && (
+                  <button
+                    onClick={() => setIsNewsModalOpen(true)}
+                    className="flex items-center gap-1 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-full shadow-sm transition"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    보도 추가
+                  </button>
+                )}
+              </div>
+
+              <div className="space-y-3">
+                {newsList.map((news) => (
+                  <div
+                    key={news.id}
+                    onClick={() =>
+                      window.open(news.url, "_blank", "noopener,noreferrer")
+                    }
+                    className="group p-3.5 rounded-2xl bg-slate-50 hover:bg-blue-50/50 border border-slate-200/80 cursor-pointer transition flex items-start justify-between gap-3"
+                  >
+                    <div className="space-y-1.5 flex-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="px-2 py-0.5 bg-rose-100 text-rose-700 text-[11px] font-extrabold rounded-md">
+                          {news.tag}
+                        </span>
+                        <span className="text-[11px] text-slate-400 font-medium">
+                          {news.press}
+                        </span>
+                      </div>
+                      <p className="text-sm font-bold text-slate-800 group-hover:text-blue-700 leading-snug flex items-center gap-1">
+                        <span>{news.title}</span>
+                        <ExternalLink className="w-3.5 h-3.5 text-slate-400 shrink-0 inline" />
+                      </p>
+                    </div>
+                    {currentUser.isAdmin && (
+                      <button
+                        onClick={(e) => handleDeleteNews(news.id, e)}
+                        className="text-slate-400 hover:text-rose-600 p-1 rounded-lg transition"
+                        title="보도 삭제"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ==================== 2. 매뉴얼 탭 ==================== */}
+        {activeTab === "manual" && (
+          <div className="space-y-3">
+            {selectedManual ? (
+              <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+                <div className="bg-slate-900 text-white px-4 py-3.5 flex items-center justify-between">
+                  <button
+                    onClick={() => setSelectedManual(null)}
+                    className="flex items-center gap-1 text-xs font-bold text-slate-200 hover:text-white"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                    목록으로 돌아가기
+                  </button>
+                  <span className="px-2.5 py-0.5 rounded-full bg-rose-600 text-[11px] font-bold">
+                    {selectedManual.tag}
+                  </span>
+                </div>
+
+                {selectedManual.isSpecialGuide ? (
+                  <ExtractionDeletionGuideDetail manualData={selectedManual} />
+                ) : (
+                  <div className="p-5 space-y-4">
+                    <h2 className="text-base font-black text-slate-900 leading-snug">
+                      {selectedManual.title}
+                    </h2>
+                    <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-xs text-slate-700 font-semibold whitespace-pre-line leading-relaxed">
+                      {selectedManual.content}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <>
+                <div className="relative">
+                  <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    placeholder="수법, 키워드(행정복지센터, 악성앱 등) 검색..."
+                    value={manualSearch}
+                    onChange={(e) => setManualSearch(e.target.value)}
+                    className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-2xl text-xs font-semibold shadow-sm focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+
+                <div className="space-y-2.5">
+                  {filteredManuals.map((m) => (
+                    <div
+                      key={m.id}
+                      onClick={() => setSelectedManual(m)}
+                      className={`p-4 rounded-2xl border cursor-pointer transition flex items-center justify-between ${
+                        m.isSpecialGuide
+                          ? "bg-gradient-to-r from-slate-900 to-blue-950 text-white border-slate-800 shadow-md"
+                          : "bg-white hover:bg-slate-50 border-slate-200 shadow-sm"
+                      }`}
+                    >
+                      <div className="space-y-1 pr-3">
+                        <span
+                          className={`inline-block px-2 py-0.5 rounded-md text-[10px] font-extrabold ${
+                            m.isSpecialGuide
+                              ? "bg-rose-500 text-white"
+                              : "bg-blue-100 text-blue-800"
+                          }`}
+                        >
+                          {m.tag}
+                        </span>
+                        <h3
+                          className={`text-sm font-extrabold leading-snug ${
+                            m.isSpecialGuide ? "text-white" : "text-slate-900"
+                          }`}
+                        >
+                          {m.title}
+                        </h3>
+                      </div>
+                      <ChevronRight
+                        className={`w-5 h-5 shrink-0 ${
+                          m.isSpecialGuide ? "text-slate-300" : "text-slate-400"
+                        }`}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        )}
+
+        {/* ==================== 3. 조치보고 탭 ==================== */}
+        {activeTab === "report" && (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+              <div>
+                <h2 className="text-sm font-black text-slate-900">
+                  현장 악성앱 구제 조치보고
+                </h2>
+                <p className="text-[11px] text-slate-500 font-medium">
+                  출동 경찰관 대면 조치 및 피해예방 내역 기록
+                </p>
+              </div>
+              <button
+                onClick={() => setIsReportModalOpen(true)}
+                className="flex items-center gap-1 px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-sm"
+              >
+                <Plus className="w-4 h-4" />
+                보고서 작성
+              </button>
+            </div>
+
+            <div className="space-y-2.5">
+              {reports.map((rep) => (
+                <div
+                  key={rep.id}
+                  className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm space-y-2"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="px-2.5 py-0.5 bg-emerald-100 text-emerald-800 text-[11px] font-extrabold rounded-md">
+                      {rep.crimeType} · {rep.dispatchResult}
+                    </span>
+                    <span className="text-[11px] text-slate-400 font-bold">
+                      {rep.date}
+                    </span>
+                  </div>
+                  <div className="text-xs font-extrabold text-slate-900">
+                    {rep.team} ({rep.officer}) — 피해자 {rep.victimName}
+                  </div>
+                  <p className="text-xs text-slate-600 leading-relaxed bg-slate-50 p-3 rounded-xl border border-slate-100">
+                    {rep.summary}
+                  </p>
+                  <div className="flex items-center justify-between text-[11px] font-bold pt-1 text-blue-700">
+                    <span>악성앱: {rep.appExtracted} / {rep.appDeleted}</span>
+                    <span>
+                      예방금액:{" "}
+                      {Number(rep.preventedAmount || 0).toLocaleString()}원
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ==================== 4. 추출도구 탭 ==================== */}
+        {activeTab === "qr" && (
+          <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm text-center space-y-4">
+            <span className="inline-block px-3 py-1 bg-blue-100 text-blue-800 text-xs font-black rounded-full">
+              경찰청 디지털포렌식센터 공식 배포
+            </span>
+            <h2 className="text-lg font-black text-slate-900">
+              악성앱 자동추출 프로그램 QR
+            </h2>
+            <p className="text-xs text-slate-600 font-medium leading-relaxed">
+              피해자의 안드로이드(갤럭시) 휴대전화 카메라로 아래 QR코드를
+              스캔하여 추출 앱을 설치하세요.
+            </p>
+            <div className="flex justify-center py-2">
+              <img
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(
+                  GUIDE_MANUAL_DEFAULT.qrUrl
+                )}`}
+                alt="악성앱 추출 QR"
+                className="w-48 h-48 border-2 border-slate-200 rounded-2xl p-3 shadow-sm"
+              />
+            </div>
+            <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 text-xs font-bold text-blue-700">
+              접속 주소: {GUIDE_MANUAL_DEFAULT.qrUrl}
+            </div>
+          </div>
+        )}
+
+        {/* ==================== 5. 소통방 탭 ==================== */}
+        {activeTab === "board" && (
+          <div className="space-y-3">
+            <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+              <div className="flex items-center gap-2">
+                {["신종APK", "현장공유", "공지"].map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() => setNewPostCategory(cat)}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-bold ${
+                      newPostCategory === cat
+                        ? "bg-slate-900 text-white"
+                        : "bg-slate-100 text-slate-600"
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="현장 신종 악성앱 패키지명·수법 실시간 공유..."
+                  value={newPostContent}
+                  onChange={(e) => setNewPostContent(e.target.value)}
+                  className="flex-1 px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold"
+                />
+                <button
+                  onClick={handleAddPost}
+                  className="px-4 py-2.5 bg-blue-600 text-white rounded-xl text-xs font-bold flex items-center gap-1 shrink-0"
+                >
+                  <Send className="w-3.5 h-3.5" />
+                  등록
+                </button>
+              </div>
+            </div>
+
+            <div className="space-y-2.5">
+              {posts.map((post) => (
+                <div
+                  key={post.id}
+                  className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-1.5"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-black text-slate-900">
+                      {post.author}
+                    </span>
+                    <span className="text-[11px] text-slate-400 font-semibold">
+                      {post.time}
+                    </span>
+                  </div>
+                  <span className="inline-block px-2 py-0.5 bg-rose-100 text-rose-700 text-[10px] font-extrabold rounded">
+                    {post.category}
+                  </span>
+                  <p className="text-xs text-slate-700 font-medium leading-relaxed pt-1">
+                    {post.content}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ==================== 6. 계정관리 탭 ==================== */}
+        {activeTab === "account" && (
+          <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+              <div>
+                <h2 className="text-base font-black text-slate-900">
+                  {currentUser.name}
+                </h2>
+                <p className="text-xs text-slate-500 font-bold mt-0.5">
+                  {currentUser.dept}
+                </p>
+              </div>
+              <span className="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-black rounded-full">
+                {currentUser.isAdmin ? "관리자 승인됨" : "일반 수사관"}
+              </span>
+            </div>
+            <div className="text-xs text-slate-600 space-y-2 font-medium">
+              <p>• 플랫폼: 서울형사 피싱X (보이스피싱·악성앱 피해구제 시스템)</p>
+              <p>• 운영부서: 서울특별시경찰청 형사과 강력계</p>
+              <p>• 문의 및 긴급신고: 국번없이 112 / 보이스피싱 통합신고 1394</p>
+            </div>
+          </div>
+        )}
+      </main>
+
+      {/* ==================== 모달 1: 통계 수정 모달 ==================== */}
+      {isStatsModalOpen && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-md space-y-4 shadow-xl">
+            <h3 className="font-black text-base text-slate-900">
+              상단 통계 지표 수정
+            </h3>
+            <div className="space-y-3 text-xs">
+              <div>
+                <label className="font-bold text-slate-600 block mb-1">
+                  오늘의 구제활동 대상자 (건)
+                </label>
+                <input
+                  type="number"
+                  value={editStats.todayTargetCount}
+                  onChange={(e) =>
+                    setEditStats({
+                      ...editStats,
+                      todayTargetCount: Number(e.target.value),
+                    })
+                  }
+                  className="w-full p-2.5 border border-slate-200 rounded-xl font-bold"
+                />
+              </div>
+              <div>
+                <label className="font-bold text-slate-600 block mb-1">
+                  전일 대비 증감 (건)
+                </label>
+                <input
+                  type="number"
+                  value={editStats.diffFromYesterday}
+                  onChange={(e) =>
+                    setEditStats({
+                      ...editStats,
+                      diffFromYesterday: Number(e.target.value),
+                    })
+                  }
+                  className="w-full p-2.5 border border-slate-200 rounded-xl font-bold"
+                />
+              </div>
+              <div>
+                <label className="font-bold text-slate-600 block mb-1">
+                  구제활동 조치율 (예: 98.9%)
+                </label>
+                <input
+                  type="text"
+                  value={editStats.actionRate}
+                  onChange={(e) =>
+                    setEditStats({ ...editStats, actionRate: e.target.value })
+                  }
+                  className="w-full p-2.5 border border-slate-200 rounded-xl font-bold"
+                />
+              </div>
+              <div>
+                <label className="font-bold text-slate-600 block mb-1">
+                  누적 피해 예방액 (예: 4.86억)
+                </label>
+                <input
+                  type="text"
+                  value={editStats.preventedAmountText}
+                  onChange={(e) =>
+                    setEditStats({
+                      ...editStats,
+                      preventedAmountText: e.target.value,
+                    })
+                  }
+                  className="w-full p-2.5 border border-slate-200 rounded-xl font-bold"
+                />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                onClick={() => setIsStatsModalOpen(false)}
+                className="px-4 py-2 text-xs font-bold text-slate-600 bg-slate-100 rounded-xl"
+              >
+                취소
+              </button>
+              <button
+                onClick={handleSaveStats}
+                className="px-4 py-2 text-xs font-bold text-white bg-blue-600 rounded-xl"
+              >
+                저장하기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ==================== 모달 2: 보도 사례 추가 모달 ==================== */}
+      {isNewsModalOpen && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-md space-y-4 shadow-xl">
+            <h3 className="font-black text-base text-slate-900">
+              보이스피싱 주요 보도 사례 추가
+            </h3>
+            <div className="space-y-3">
+              <input
+                type="text"
+                placeholder="수법 태그 (예: 주민센터사칭, 카드배송, 기관사칭)"
+                value={newArticle.tag}
+                onChange={(e) =>
+                  setNewArticle({ ...newArticle, tag: e.target.value })
+                }
+                className="w-full p-2.5 border border-slate-200 rounded-xl text-xs font-semibold"
+              />
+              <input
+                type="text"
+                placeholder="기사 또는 영상 제목 입력"
+                value={newArticle.title}
+                onChange={(e) =>
+                  setNewArticle({ ...newArticle, title: e.target.value })
+                }
+                className="w-full p-2.5 border border-slate-200 rounded-xl text-xs font-semibold"
+              />
+              <input
+                type="text"
+                placeholder="언론사 및 날짜 (예: KBS 뉴스 · 2026.11.18)"
+                value={newArticle.press}
+                onChange={(e) =>
+                  setNewArticle({ ...newArticle, press: e.target.value })
+                }
+                className="w-full p-2.5 border border-slate-200 rounded-xl text-xs font-semibold"
+              />
+              <input
+                type="url"
+                placeholder="기사 원문 또는 유튜브 링크 (https://...)"
+                value={newArticle.url}
+                onChange={(e) =>
+                  setNewArticle({ ...newArticle, url: e.target.value })
+                }
+                className="w-full p-2.5 border border-slate-200 rounded-xl text-xs font-semibold"
+              />
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                onClick={() => setIsNewsModalOpen(false)}
+                className="px-4 py-2 text-xs font-bold text-slate-600 bg-slate-100 rounded-xl"
+              >
+                취소
+              </button>
+              <button
+                onClick={handleAddNews}
+                className="px-4 py-2 text-xs font-bold text-white bg-blue-600 rounded-xl"
+              >
+                등록하기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ==================== 모달 3: 조치보고 작성 모달 ==================== */}
+      {isReportModalOpen && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-md space-y-3 shadow-xl">
+            <h3 className="font-black text-base text-slate-900">
+              현장 구제 조치보고 작성
+            </h3>
+            <input
+              type="text"
+              placeholder="피해자 성명"
+              value={newReport.victimName}
+              onChange={(e) =>
+                setNewReport({ ...newReport, victimName: e.target.value })
+              }
+              className="w-full p-2.5 border border-slate-200 rounded-xl text-xs font-semibold"
+            />
+            <input
+              type="text"
+              placeholder="출동 소속/팀 (예: 송파서 피싱팀)"
+              value={newReport.team}
+              onChange={(e) =>
+                setNewReport({ ...newReport, team: e.target.value })
+              }
+              className="w-full p-2.5 border border-slate-200 rounded-xl text-xs font-semibold"
+            />
+            <input
+              type="text"
+              placeholder="수법 분류 (예: 주민센터사칭, 카드배송)"
+              value={newReport.crimeType}
+              onChange={(e) =>
+                setNewReport({ ...newReport, crimeType: e.target.value })
+              }
+              className="w-full p-2.5 border border-slate-200 rounded-xl text-xs font-semibold"
+            />
+            <input
+              type="number"
+              placeholder="피해 예방 금액 (숫자만 입력, 예: 30000000)"
+              value={newReport.preventedAmount}
+              onChange={(e) =>
+                setNewReport({ ...newReport, preventedAmount: e.target.value })
+              }
+              className="w-full p-2.5 border border-slate-200 rounded-xl text-xs font-semibold"
+            />
+            <textarea
+              placeholder="조치 요약 (비행기모드 전환, 악성앱 추출·삭제, 지급정지 등)"
+              rows={3}
+              value={newReport.summary}
+              onChange={(e) =>
+                setNewReport({ ...newReport, summary: e.target.value })
+              }
+              className="w-full p-2.5 border border-slate-200 rounded-xl text-xs font-semibold"
+            />
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                onClick={() => setIsReportModalOpen(false)}
+                className="px-4 py-2 text-xs font-bold text-slate-600 bg-slate-100 rounded-xl"
+              >
+                취소
+              </button>
+              <button
+                onClick={handleAddReport}
+                className="px-4 py-2 text-xs font-bold text-white bg-blue-600 rounded-xl"
+              >
+                보고서 등록
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ==================== 하단 고정 네비게이션 바 ==================== */}
+      <nav className="fixed bottom-0 inset-x-0 bg-white border-t border-slate-200 z-40">
+        <div className="max-w-lg mx-auto grid grid-cols-6 py-2">
+          {[
+            { id: "stats", label: "통계", icon: BarChart3 },
+            { id: "manual", label: "매뉴얼", icon: BookOpen },
+            { id: "report", label: "조치보고", icon: FileText },
+            { id: "qr", label: "추출도구", icon: QrCode },
+            { id: "board", label: "소통방", icon: MessageSquare },
+            { id: "account", label: "계정관리", icon: Users },
+          ].map((item) => {
+            const Icon = item.icon;
+            const active = activeTab === item.id;
+            return (
+              <button
+                key={item.id}
+                onClick={() => setActiveTab(item.id)}
+                className={`flex flex-col items-center justify-center py-1 gap-1 transition ${
+                  active
+                    ? "text-blue-600 font-extrabold"
+                    : "text-slate-400 font-semibold hover:text-slate-600"
+                }`}
+              >
+                <Icon className="w-5 h-5" />
+                <span className="text-[11px]">{item.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </nav>
+    </div>
+  );
+}
