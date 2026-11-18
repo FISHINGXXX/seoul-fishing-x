@@ -32,6 +32,7 @@ import {
   Eye,
   EyeOff,
   UserX,
+  ExternalLink,
 } from "lucide-react";
 
 import { initializeApp, getApps, getApp } from "firebase/app";
@@ -144,6 +145,33 @@ const INITIAL_MANUALS = [
     tag: "보이스피싱",
     content:
       "피해자가 금감원(1332)이나 경찰(112)로 전화해도 보이스피싱 조직으로 연결되도록 통화를 가로채는 악성앱입니다.\n\n[초동 조치]\n1. 피해자 기기로는 절대 확인 전화 금지\n2. 출동 경찰관의 기기 또는 다른 유선 전화로 금융사 지급정지 요청",
+  },
+];
+
+const DEFAULT_NEWS_LIST = [
+  {
+    id: "news-1",
+    tag: "주민센터사칭",
+    title:
+      "“친척이 등본 떼러 왔는데…” 행정복지센터·경찰 사칭 우편함 현금 편취 주의보",
+    press: "경찰청 알리미 · 2026.11",
+    url: "https://www.youtube.com/watch?v=MkStRakOvV4",
+  },
+  {
+    id: "news-2",
+    tag: "카드배송사칭",
+    title:
+      "“신청 안 한 카드가 배송됐다” 원격제어·악성앱 설치 유도 보이스피싱 급증",
+    press: "수사지원팀 경보 · 2026.11",
+    url: "https://www.police.go.kr",
+  },
+  {
+    id: "news-3",
+    tag: "악성앱구제",
+    title:
+      "서울경찰청 형사과, 보이스피싱 악성앱 피해 대상자 실시간 대면 구제 총력 대응",
+    press: "서울경찰청 · 2026.11",
+    url: "https://www.smpa.go.kr",
   },
 ];
 
@@ -1064,42 +1092,17 @@ export default function App() {
     labelPreventedAmount: "피해 예방액",
     preventedAmount: "4.86",
     preventedUnit: "억",
-    titleChart: "최근 1개월 수법별 발생 비중",
-    chartUnit: "%",
-    titleList: "10월 경찰서별 접수 현황 (Top 3)",
-    chartData: [
-      {
-        id: 1,
-        label: "주민센터사칭",
-        value: 48,
-        note: "(급증)",
-        color: "from-rose-500 to-rose-600",
-        textColor: "text-rose-600",
-      },
-      {
-        id: 2,
-        label: "카드배송사칭",
-        value: 35,
-        note: "",
-        color: "from-amber-400 to-amber-500",
-        textColor: "text-amber-600",
-      },
-      {
-        id: 3,
-        label: "대출빙자",
-        value: 23,
-        note: "",
-        color: "from-blue-500 to-indigo-600",
-        textColor: "text-blue-600",
-      },
-    ],
-    stationList: [
-      { id: 1, name: "송파경찰서", total: "20", completed: "20" },
-      { id: 2, name: "영등포경찰서", total: "12", completed: "12" },
-      { id: 3, name: "구로경찰서", total: "9", completed: "8" },
-    ],
+    titleNews: "최근 보이스피싱 주요 보도 사례",
+    newsList: DEFAULT_NEWS_LIST,
   });
   const [isEditingStats, setIsEditingStats] = useState(false);
+  const [isAddingNews, setIsAddingNews] = useState(false);
+  const [newNewsItem, setNewNewsItem] = useState({
+    tag: "",
+    title: "",
+    press: "",
+    url: "",
+  });
 
   // 앱 로딩 시 스플래시 화면 타이머 (약 4초간 표시 후 부드럽게 전환)
   useEffect(() => {
@@ -1390,12 +1393,13 @@ export default function App() {
                   ? "피해 예방액"
                   : data.stats.labelPreventedAmount ||
                     prev.labelPreventedAmount,
-              titleChart:
-                data.stats.titleChart === "최근 1주일 수법별 발생 비중"
-                  ? "최근 1개월 수법별 발생 비중"
-                  : data.stats.titleChart || prev.titleChart,
-              chartData: data.stats.chartData || prev.chartData,
-              stationList: data.stats.stationList || prev.stationList,
+              titleNews:
+                data.stats.titleNews ||
+                prev.titleNews ||
+                "최근 보이스피싱 주요 보도 사례",
+              newsList: Array.isArray(data.stats.newsList)
+                ? data.stats.newsList
+                : prev.newsList || DEFAULT_NEWS_LIST,
             }));
           }
           if (data.formLabels) {
@@ -2219,7 +2223,7 @@ export default function App() {
   const toggleStatsEdit = () => {
     if (isEditingStats) {
       saveConfigToCloud(stats, formLabels);
-      setReportToast("통계 설정이 저장되었습니다.");
+      setReportToast("통계 및 보도 사례 설정이 저장되었습니다.");
       setTimeout(() => setReportToast(null), 2500);
     }
     setIsEditingStats(!isEditingStats);
@@ -2234,22 +2238,62 @@ export default function App() {
     setIsEditingForm(!isEditingForm);
   };
 
-  const handleChartDataChange = (id, field, newValue) => {
+  const handleNewsItemChange = (id, field, newValue) => {
     setStats((prev) => ({
       ...prev,
-      chartData: prev.chartData.map((item) =>
+      newsList: (prev.newsList || DEFAULT_NEWS_LIST).map((item) =>
         item.id === id ? { ...item, [field]: newValue } : item
       ),
     }));
   };
 
-  const handleStationListChange = (id, field, newValue) => {
-    setStats((prev) => ({
-      ...prev,
-      stationList: (prev.stationList || []).map((item) =>
-        item.id === id ? { ...item, [field]: newValue } : item
+  const handleAddNewsSubmit = () => {
+    if (!newNewsItem.title.trim()) {
+      setNoticeModal({
+        type: "warning",
+        title: "기사 제목 입력 필요",
+        message: "보도 사례의 기사 또는 영상 제목을 입력해주세요.",
+      });
+      return;
+    }
+
+    const rawUrl = newNewsItem.url.trim();
+    const formattedUrl =
+      rawUrl && !rawUrl.startsWith("http") ? `https://${rawUrl}` : rawUrl;
+
+    const createdNews = {
+      id: `news-${Date.now()}`,
+      tag: newNewsItem.tag.trim() || "주요보도",
+      title: newNewsItem.title.trim(),
+      press: newNewsItem.press.trim() || `보도자료 · ${getTodayFormatted()}`,
+      url: formattedUrl || "https://www.police.go.kr",
+    };
+
+    const updatedStats = {
+      ...stats,
+      newsList: [createdNews, ...(stats.newsList || DEFAULT_NEWS_LIST)],
+    };
+
+    setStats(updatedStats);
+    saveConfigToCloud(updatedStats, formLabels);
+    setNewNewsItem({ tag: "", title: "", press: "", url: "" });
+    setIsAddingNews(false);
+    setReportToast("새로운 보이스피싱 보도 사례가 등록되었습니다.");
+    setTimeout(() => setReportToast(null), 3000);
+  };
+
+  const handleDeleteNewsItem = (id, e) => {
+    if (e) e.stopPropagation();
+    const updatedStats = {
+      ...stats,
+      newsList: (stats.newsList || DEFAULT_NEWS_LIST).filter(
+        (item) => item.id !== id
       ),
-    }));
+    };
+    setStats(updatedStats);
+    saveConfigToCloud(updatedStats, formLabels);
+    setReportToast("보도 사례가 삭제되었습니다.");
+    setTimeout(() => setReportToast(null), 2500);
   };
 
   const handleDownloadExcel = (targetList) => {
@@ -3207,221 +3251,226 @@ export default function App() {
               </div>
             </div>
 
+            {/* 교체된 영역: 최근 보이스피싱 관련 보도 사례 */}
             <div className="bg-white p-5 rounded-[2rem] shadow-sm border border-slate-200/80 space-y-4">
-              <h3 className="text-xs font-black text-slate-900 flex items-center gap-2">
-                <BarChart3 className="w-4 h-4 text-blue-600" />
-                {isEditingStats && isAdmin ? (
-                  <input
-                    type="text"
-                    value={stats.titleChart}
-                    onChange={(e) =>
-                      setStats({ ...stats, titleChart: e.target.value })
-                    }
-                    className="bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1 text-xs font-bold focus:outline-none flex-1"
-                  />
-                ) : (
-                  <span>{stats.titleChart}</span>
-                )}
-              </h3>
-              <div className="space-y-3.5">
-                {stats.chartData &&
-                  stats.chartData.map((item) => (
-                    <div key={item.id}>
-                      {isEditingStats && isAdmin ? (
-                        <div className="space-y-2 bg-slate-50 p-2.5 rounded-xl border border-slate-200/60 mb-2 shadow-sm">
-                          <input
-                            type="text"
-                            value={item.label}
-                            onChange={(e) =>
-                              handleChartDataChange(
-                                item.id,
-                                "label",
-                                e.target.value
-                              )
-                            }
-                            className="w-full bg-white border border-slate-200 rounded-lg px-2 py-1 text-[11px] font-bold text-slate-700 focus:outline-none"
-                          />
-                          <div className="flex items-center gap-2">
-                            <input
-                              type="range"
-                              min="0"
-                              max="100"
-                              value={item.value}
-                              onChange={(e) =>
-                                handleChartDataChange(
-                                  item.id,
-                                  "value",
-                                  Number(e.target.value)
-                                )
-                              }
-                              className="flex-1 accent-blue-600"
-                            />
-                            <input
-                              type="number"
-                              value={item.value}
-                              onChange={(e) =>
-                                handleChartDataChange(
-                                  item.id,
-                                  "value",
-                                  Number(e.target.value)
-                                )
-                              }
-                              className="w-12 bg-white border border-slate-200 rounded-lg px-1.5 py-1 text-xs font-black text-right focus:outline-none"
-                            />
-                            <input
-                              type="text"
-                              value={stats.chartUnit ?? "%"}
-                              onChange={(e) =>
-                                setStats({
-                                  ...stats,
-                                  chartUnit: e.target.value,
-                                })
-                              }
-                              className="w-8 bg-white border border-slate-200 rounded-lg px-1 py-1 text-xs font-bold text-slate-600 text-center focus:outline-none"
-                            />
-                            <input
-                              type="text"
-                              value={item.note}
-                              onChange={(e) =>
-                                handleChartDataChange(
-                                  item.id,
-                                  "note",
-                                  e.target.value
-                                )
-                              }
-                              placeholder="비고"
-                              className="w-16 bg-white border border-slate-200 rounded-lg px-1.5 py-1 text-[11px] font-bold focus:outline-none"
-                            />
-                          </div>
-                        </div>
-                      ) : (
-                        <div>
-                          <div className="flex justify-between text-xs font-bold text-slate-700 mb-1.5">
-                            <span>{item.label}</span>
-                            <span className={`${item.textColor} font-black`}>
-                              {item.value}
-                              {stats.chartUnit ?? "%"} {item.note}
-                            </span>
-                          </div>
-                          <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden p-0.5">
-                            <div
-                              className={`bg-gradient-to-r ${item.color} h-full rounded-full shadow-sm`}
-                              style={{ width: `${item.value}%` }}
-                            ></div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-              </div>
-            </div>
-
-            <div className="bg-white p-5 rounded-[2rem] shadow-sm border border-slate-200/80 space-y-3">
-              <h3 className="text-xs font-black text-slate-900">
-                {isEditingStats && isAdmin ? (
-                  <input
-                    type="text"
-                    value={stats.titleList}
-                    onChange={(e) =>
-                      setStats({ ...stats, titleList: e.target.value })
-                    }
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs font-bold focus:outline-none"
-                  />
-                ) : (
-                  <span>{stats.titleList}</span>
-                )}
-              </h3>
-              <ul className="space-y-2.5">
-                {(stats.stationList || []).map((st, idx) => (
-                  <li
-                    key={st.id}
-                    className="flex justify-between items-center text-xs p-3 bg-slate-50/80 rounded-2xl border border-slate-100 font-bold gap-2"
+              <div className="flex items-center justify-between gap-2">
+                <h3 className="text-xs font-black text-slate-900 flex items-center gap-2 flex-1 min-w-0">
+                  <FileText className="w-4 h-4 text-blue-600 shrink-0" />
+                  {isEditingStats && isAdmin ? (
+                    <input
+                      type="text"
+                      value={
+                        stats.titleNews ?? "최근 보이스피싱 주요 보도 사례"
+                      }
+                      onChange={(e) =>
+                        setStats({ ...stats, titleNews: e.target.value })
+                      }
+                      className="bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1 text-xs font-bold focus:outline-none flex-1"
+                    />
+                  ) : (
+                    <span className="truncate">
+                      {stats.titleNews ?? "최근 보이스피싱 주요 보도 사례"}
+                    </span>
+                  )}
+                </h3>
+                {isAdmin && (
+                  <button
+                    type="button"
+                    onClick={() => setIsAddingNews(!isAddingNews)}
+                    className="bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-bold px-3 py-1.5 rounded-xl shadow-sm flex items-center gap-1 transition shrink-0 whitespace-nowrap"
                   >
+                    <Plus className="w-3.5 h-3.5" />
+                    보도 추가
+                  </button>
+                )}
+              </div>
+
+              {isAddingNews && isAdmin && (
+                <div className="bg-blue-50/60 border border-blue-200 rounded-2xl p-4 space-y-2.5">
+                  <div className="text-xs font-black text-blue-800">
+                    새 보이스피싱 보도 사례 등록
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      type="text"
+                      placeholder="수법 태그 (예: 주민센터사칭)"
+                      value={newNewsItem.tag}
+                      onChange={(e) =>
+                        setNewNewsItem({ ...newNewsItem, tag: e.target.value })
+                      }
+                      className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 focus:outline-none focus:border-blue-500"
+                    />
+                    <input
+                      type="text"
+                      placeholder="언론사·날짜 (예: KBS · 2026.11)"
+                      value={newNewsItem.press}
+                      onChange={(e) =>
+                        setNewNewsItem({
+                          ...newNewsItem,
+                          press: e.target.value,
+                        })
+                      }
+                      className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 focus:outline-none focus:border-blue-500"
+                    />
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="기사 또는 보도 영상 제목 입력"
+                    value={newNewsItem.title}
+                    onChange={(e) =>
+                      setNewNewsItem({ ...newNewsItem, title: e.target.value })
+                    }
+                    className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 focus:outline-none focus:border-blue-500"
+                  />
+                  <input
+                    type="text"
+                    placeholder="원문 기사 또는 유튜브 링크 (https://...)"
+                    value={newNewsItem.url}
+                    onChange={(e) =>
+                      setNewNewsItem({ ...newNewsItem, url: e.target.value })
+                    }
+                    className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 focus:outline-none focus:border-blue-500"
+                  />
+                  <div className="flex justify-end gap-2 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsAddingNews(false);
+                        setNewNewsItem({
+                          tag: "",
+                          title: "",
+                          press: "",
+                          url: "",
+                        });
+                      }}
+                      className="px-3.5 py-2 bg-white border border-slate-200 text-slate-600 rounded-xl text-xs font-bold"
+                    >
+                      취소
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleAddNewsSubmit}
+                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-sm"
+                    >
+                      등록하기
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              <div className="space-y-2.5">
+                {(stats.newsList || DEFAULT_NEWS_LIST).map((item) => (
+                  <div key={item.id}>
                     {isEditingStats && isAdmin ? (
-                      <div className="w-full flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-2 flex-1 min-w-0">
-                          <span
-                            className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] shrink-0 ${
-                              idx === 0
-                                ? "bg-blue-100 text-blue-700"
-                                : "bg-slate-200 text-slate-700"
-                            }`}
+                      <div className="space-y-2 bg-slate-50 p-3 rounded-2xl border border-slate-200/80">
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="text"
+                            value={item.tag}
+                            onChange={(e) =>
+                              handleNewsItemChange(
+                                item.id,
+                                "tag",
+                                e.target.value
+                              )
+                            }
+                            placeholder="태그"
+                            className="w-28 bg-white border border-slate-200 rounded-lg px-2 py-1 text-[11px] font-bold text-rose-700 focus:outline-none"
+                          />
+                          <input
+                            type="text"
+                            value={item.press}
+                            onChange={(e) =>
+                              handleNewsItemChange(
+                                item.id,
+                                "press",
+                                e.target.value
+                              )
+                            }
+                            placeholder="언론사 · 날짜"
+                            className="flex-1 bg-white border border-slate-200 rounded-lg px-2 py-1 text-[11px] font-bold text-slate-600 focus:outline-none"
+                          />
+                          <button
+                            type="button"
+                            onClick={(e) => handleDeleteNewsItem(item.id, e)}
+                            className="p-1.5 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 transition shrink-0"
+                            title="보도 삭제"
                           >
-                            {idx + 1}
-                          </span>
-                          <input
-                            type="text"
-                            value={st.name}
-                            onChange={(e) =>
-                              handleStationListChange(
-                                st.id,
-                                "name",
-                                e.target.value
-                              )
-                            }
-                            placeholder="경찰서명"
-                            className="w-full bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs font-extrabold text-slate-800 focus:outline-none focus:border-blue-500"
-                          />
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
                         </div>
-                        <div className="flex items-center gap-1 shrink-0">
-                          <input
-                            type="text"
-                            value={st.total}
-                            onChange={(e) =>
-                              handleStationListChange(
-                                st.id,
-                                "total",
-                                e.target.value
-                              )
-                            }
-                            className="w-11 bg-white border border-slate-200 rounded-lg px-1.5 py-1 text-xs font-black text-slate-900 text-center focus:outline-none focus:border-blue-500"
-                          />
-                          <span className="text-[11px] text-slate-600">건</span>
-                          <span className="text-[11px] text-slate-400 ml-1">
-                            (완료
-                          </span>
-                          <input
-                            type="text"
-                            value={st.completed}
-                            onChange={(e) =>
-                              handleStationListChange(
-                                st.id,
-                                "completed",
-                                e.target.value
-                              )
-                            }
-                            className="w-11 bg-white border border-slate-200 rounded-lg px-1.5 py-1 text-xs font-bold text-slate-600 text-center focus:outline-none focus:border-blue-500"
-                          />
-                          <span className="text-[11px] text-slate-400">
-                            건)
-                          </span>
-                        </div>
+                        <input
+                          type="text"
+                          value={item.title}
+                          onChange={(e) =>
+                            handleNewsItemChange(
+                              item.id,
+                              "title",
+                              e.target.value
+                            )
+                          }
+                          placeholder="기사 제목"
+                          className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 focus:outline-none"
+                        />
+                        <input
+                          type="text"
+                          value={item.url}
+                          onChange={(e) =>
+                            handleNewsItemChange(item.id, "url", e.target.value)
+                          }
+                          placeholder="기사 링크 (https://...)"
+                          className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-[11px] font-semibold text-blue-600 focus:outline-none"
+                        />
                       </div>
                     ) : (
-                      <div className="w-full flex justify-between items-center">
-                        <span className="text-slate-800 flex items-center gap-2">
-                          <span
-                            className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] ${
-                              idx === 0
-                                ? "bg-blue-100 text-blue-700"
-                                : "bg-slate-200 text-slate-700"
-                            }`}
-                          >
-                            {idx + 1}
-                          </span>{" "}
-                          {st.name}
-                        </span>
-                        <span className="text-slate-900 font-black whitespace-nowrap">
-                          {st.total}건{" "}
-                          <span className="text-slate-400 font-medium ml-1">
-                            (완료 {st.completed}건)
-                          </span>
-                        </span>
+                      <div
+                        onClick={() => {
+                          if (item.url) {
+                            window.open(
+                              item.url,
+                              "_blank",
+                              "noopener,noreferrer"
+                            );
+                          }
+                        }}
+                        className="group p-3.5 bg-slate-50/80 hover:bg-blue-50/50 rounded-2xl border border-slate-100 hover:border-blue-200 transition cursor-pointer flex items-start justify-between gap-2.5"
+                      >
+                        <div className="space-y-1.5 flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="px-2 py-0.5 bg-rose-100 text-rose-700 text-[10px] font-extrabold rounded-md">
+                              {item.tag}
+                            </span>
+                            <span className="text-[11px] text-slate-400 font-bold">
+                              {item.press}
+                            </span>
+                          </div>
+                          <p className="text-xs font-extrabold text-slate-800 group-hover:text-blue-700 leading-snug break-words">
+                            {item.title}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-1 shrink-0 pt-0.5">
+                          <ExternalLink className="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-600 transition" />
+                          {isAdmin && (
+                            <button
+                              type="button"
+                              onClick={(e) => handleDeleteNewsItem(item.id, e)}
+                              className="p-1 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition"
+                              title="삭제"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                        </div>
                       </div>
                     )}
-                  </li>
+                  </div>
                 ))}
-              </ul>
+                {(stats.newsList || DEFAULT_NEWS_LIST).length === 0 && (
+                  <div className="text-center py-6 text-xs font-bold text-slate-400">
+                    등록된 보이스피싱 보도 사례가 없습니다.
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}
