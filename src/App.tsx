@@ -175,6 +175,33 @@ const DEFAULT_NEWS_LIST = [
   },
 ];
 
+const QUICK_RELIEF_LINKS = [
+  {
+    id: "link-sos",
+    category: "피싱제보",
+    name: "피싱안심SOS",
+    url: "https://counterscam112.go.kr",
+    badgeBg: "bg-rose-100 text-rose-700 border-rose-200",
+    cardHover: "hover:border-rose-300 hover:bg-rose-50/40",
+  },
+  {
+    id: "link-account",
+    category: "계좌정보통합관리서비스",
+    name: "Account Info",
+    url: "https://www.accountinfo.or.kr",
+    badgeBg: "bg-blue-100 text-blue-700 border-blue-200",
+    cardHover: "hover:border-blue-300 hover:bg-blue-50/40",
+  },
+  {
+    id: "link-msafer",
+    category: "휴대폰개통확인 및 차단",
+    name: "Msafer",
+    url: "https://www.msafer.or.kr",
+    badgeBg: "bg-emerald-100 text-emerald-700 border-emerald-200",
+    cardHover: "hover:border-emerald-300 hover:bg-emerald-50/40",
+  },
+];
+
 const INITIAL_REPORTS = [
   {
     id: "REP-2026-0893",
@@ -723,9 +750,7 @@ const ExtractionDeletionGuideDetail = ({ manualData }) => {
                   </div>
                   <div className="flex justify-between text-slate-500 font-bold">
                     <span>소속 / 계급 / 성명</span>
-                    <span className="text-slate-800">
-                      서울청 / 경사 / 홍길동
-                    </span>
+                    <span className="text-slate-800">서울청 / 경사 / 홍길동</span>
                   </div>
                   <div className="bg-blue-600 text-white text-center py-1 rounded font-black mt-1">
                     검사 시작 및 전송
@@ -917,7 +942,9 @@ const ExtractionDeletionGuideDetail = ({ manualData }) => {
                   </div>
                   <p className="text-[11px] text-slate-600 font-bold">
                     카테고리에서{" "}
-                    <span className="text-rose-600 font-black">[다운로드]</span>{" "}
+                    <span className="text-rose-600 font-black">
+                      [다운로드]
+                    </span>{" "}
                     및{" "}
                     <span className="text-rose-600 font-black">
                       [설치 파일(APK)]
@@ -1391,8 +1418,7 @@ export default function App() {
               labelPreventedAmount:
                 data.stats.labelPreventedAmount === "피해 예방액 (추정)"
                   ? "피해 예방액"
-                  : data.stats.labelPreventedAmount ||
-                    prev.labelPreventedAmount,
+                  : data.stats.labelPreventedAmount || prev.labelPreventedAmount,
               titleNews:
                 data.stats.titleNews ||
                 prev.titleNews ||
@@ -1447,7 +1473,8 @@ export default function App() {
       setNoticeModal({
         type: "error",
         title: "계정 이용 종료 안내",
-        message: "관리자에 의해 회원 탈퇴(삭제) 처리되어 로그아웃되었습니다.",
+        message:
+          "관리자에 의해 회원 탈퇴(삭제) 처리되어 로그아웃되었습니다.",
       });
     } else {
       const cloudIsAdmin = matchedUser.role === "admin";
@@ -2938,8 +2965,8 @@ export default function App() {
                 {confirmWithdrawId === selectedMemberModal.id ? (
                   <div className="bg-rose-50 border border-rose-200 rounded-2xl p-3.5 space-y-2.5 text-center">
                     <p className="text-xs font-black text-rose-700 leading-snug">
-                      정말 {selectedMemberModal.rank} {selectedMemberModal.name}{" "}
-                      수사관의 계정을
+                      정말 {selectedMemberModal.rank}{" "}
+                      {selectedMemberModal.name} 수사관의 계정을
                       <br />
                       탈퇴(영구 삭제) 처리하시겠습니까?
                     </p>
@@ -2965,7 +2992,9 @@ export default function App() {
                 ) : (
                   <button
                     type="button"
-                    onClick={() => setConfirmWithdrawId(selectedMemberModal.id)}
+                    onClick={() =>
+                      setConfirmWithdrawId(selectedMemberModal.id)
+                    }
                     className="w-full py-3 rounded-xl bg-rose-50 hover:bg-rose-600 text-rose-600 hover:text-white border border-rose-200 text-xs font-extrabold flex items-center justify-center gap-1.5 transition"
                   >
                     <UserX className="w-4 h-4" />
@@ -3219,8 +3248,7 @@ export default function App() {
                   </div>
                 ) : (
                   <div className="text-[11px] font-extrabold text-slate-400 mb-1.5 truncate tracking-tight">
-                    {stats.preventedMonth ?? "10"}월{" "}
-                    {stats.labelPreventedAmount}
+                    {stats.preventedMonth ?? "10"}월 {stats.labelPreventedAmount}
                   </div>
                 )}
                 {isEditingStats && isAdmin ? (
@@ -3251,7 +3279,47 @@ export default function App() {
               </div>
             </div>
 
-            {/* 교체된 영역: 최근 보이스피싱 관련 보도 사례 */}
+            {/* 주요 보도 사례 바로 위: 피해 구제·차단 유관기관 바로가기 3종 (주소 미노출) */}
+            <div className="bg-white p-5 rounded-[2rem] shadow-sm border border-slate-200/80 space-y-3">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xs font-black text-slate-900 flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4 text-blue-600 shrink-0" />
+                  <span>피싱 피해 구제 · 차단 바로가기</span>
+                </h3>
+                <span className="text-[10px] font-extrabold text-slate-400">
+                  터치 시 바로 이동
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 gap-2.5">
+                {QUICK_RELIEF_LINKS.map((link) => (
+                  <button
+                    key={link.id}
+                    type="button"
+                    onClick={() =>
+                      window.open(link.url, "_blank", "noopener,noreferrer")
+                    }
+                    className={`w-full text-left px-4 py-3.5 rounded-2xl bg-slate-50/90 border border-slate-200/80 transition flex items-center justify-between gap-3 group ${link.cardHover}`}
+                  >
+                    <div className="flex items-center gap-2 min-w-0 flex-wrap">
+                      <span
+                        className={`text-[11px] font-extrabold px-2.5 py-0.5 rounded-md border ${link.badgeBg}`}
+                      >
+                        {link.category}
+                      </span>
+                      <span className="text-sm font-black text-slate-900 group-hover:text-blue-700 transition">
+                        {link.name}
+                      </span>
+                    </div>
+                    <div className="w-7 h-7 rounded-full bg-white border border-slate-200 flex items-center justify-center shrink-0 group-hover:border-blue-300 group-hover:bg-blue-50 transition">
+                      <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-blue-600" />
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* 최근 보이스피싱 관련 보도 사례 */}
             <div className="bg-white p-5 rounded-[2rem] shadow-sm border border-slate-200/80 space-y-4">
               <div className="flex items-center justify-between gap-2">
                 <h3 className="text-xs font-black text-slate-900 flex items-center gap-2 flex-1 min-w-0">
@@ -5610,7 +5678,7 @@ export default function App() {
           }`}
         >
           <BarChart3 className="w-5 h-5" />
-          <span className="text-[10px] tracking-tight">통계</span>
+          <span className="text-[10px] tracking-tight">메인</span>
         </button>
 
         <button
