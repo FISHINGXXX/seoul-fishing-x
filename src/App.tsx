@@ -180,7 +180,7 @@ const QUICK_RELIEF_LINKS = [
     id: "link-sos",
     category: "피싱제보",
     name: "피싱안심SOS",
-    url: "https://counterscam112.go.kr",
+    url: "https://www.counterscam112.go.kr/",
     badgeBg: "bg-rose-100 text-rose-700 border-rose-200",
     cardHover: "hover:border-rose-300 hover:bg-rose-50/40",
   },
@@ -188,7 +188,7 @@ const QUICK_RELIEF_LINKS = [
     id: "link-account",
     category: "계좌정보통합관리서비스",
     name: "Account Info",
-    url: "https://www.accountinfo.or.kr",
+    url: "https://www.accountinfo.or.kr/",
     badgeBg: "bg-blue-100 text-blue-700 border-blue-200",
     cardHover: "hover:border-blue-300 hover:bg-blue-50/40",
   },
@@ -196,7 +196,7 @@ const QUICK_RELIEF_LINKS = [
     id: "link-msafer",
     category: "휴대폰개통확인 및 차단",
     name: "Msafer",
-    url: "https://www.msafer.or.kr",
+    url: "https://www.msafer.or.kr/",
     badgeBg: "bg-emerald-100 text-emerald-700 border-emerald-200",
     cardHover: "hover:border-emerald-300 hover:bg-emerald-50/40",
   },
@@ -3293,13 +3293,12 @@ export default function App() {
 
               <div className="grid grid-cols-1 gap-2.5">
                 {QUICK_RELIEF_LINKS.map((link) => (
-                  <button
+                  <a
                     key={link.id}
-                    type="button"
-                    onClick={() =>
-                      window.open(link.url, "_blank", "noopener,noreferrer")
-                    }
-                    className={`w-full text-left px-4 py-3.5 rounded-2xl bg-slate-50/90 border border-slate-200/80 transition flex items-center justify-between gap-3 group ${link.cardHover}`}
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`w-full text-left px-4 py-3.5 rounded-2xl bg-slate-50/90 border border-slate-200/80 transition flex items-center justify-between gap-3 group no-underline ${link.cardHover}`}
                   >
                     <div className="flex items-center gap-2 min-w-0 flex-wrap">
                       <span
@@ -3314,7 +3313,7 @@ export default function App() {
                     <div className="w-7 h-7 rounded-full bg-white border border-slate-200 flex items-center justify-center shrink-0 group-hover:border-blue-300 group-hover:bg-blue-50 transition">
                       <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-blue-600" />
                     </div>
-                  </button>
+                  </a>
                 ))}
               </div>
             </div>
